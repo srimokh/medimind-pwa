@@ -27,7 +27,7 @@ function App() {
         },
         {
           headers: {
-            Authorization: `Bearer sk-test-placeholder-key`,
+            Authorization: `Bearer YOUR_OPENAI_API_KEY`, // (Replace for local testing)
             "Content-Type": "application/json",
           },
         }
