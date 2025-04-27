@@ -11,7 +11,7 @@ root.render(
     <App />
   </React.StrictMode>
 );
-
+git remote add origin https://github.com/srimokh/medimind-pwa.git
 // Register service worker for PWA functionality
 serviceWorkerRegistration.register();  // <-- ADD THIS
 

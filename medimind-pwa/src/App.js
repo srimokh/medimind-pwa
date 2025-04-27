@@ -27,7 +27,7 @@ function App() {
         },
         {
           headers: {
-            Authorization: `Bearer YOUR_OPENAI_API_KEY`, // (Replace for local testing)
+            Authorization: `Bearer YOUR_OPENAI_API_KEY`,  // replace later
             "Content-Type": "application/json",
           },
         }
