@@ -13,4 +13,5 @@ root.render(
   </React.StrictMode>
 );
 
+
 serviceWorkerRegistration.register(); // ← this line needs a semi
