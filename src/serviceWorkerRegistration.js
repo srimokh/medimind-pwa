@@ -1,12 +1,9 @@
-// This optional code is used to register a service worker.
-// register() is not called by default.
-
 const isLocalhost = Boolean(
     window.location.hostname === 'localhost' ||
-      window.location.hostname === '[::1]' ||
-      window.location.hostname.match(
-        /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
-      )
+    window.location.hostname === '[::1]' ||
+    window.location.hostname.match(
+      /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
+    )
   );
   
   export function register(config) {
@@ -35,7 +32,8 @@ const isLocalhost = Boolean(
       .then((registration) => {
         registration.onupdatefound = () => {
           const installingWorker = registration.installing;
-          if (installingWorker == null) return;
+          if (!installingWorker) return;
+  
           installingWorker.onstatechange = () => {
             if (installingWorker.state === 'installed') {
               if (navigator.serviceWorker.controller) {
@@ -62,7 +60,7 @@ const isLocalhost = Boolean(
         const contentType = response.headers.get('content-type');
         if (
           response.status === 404 ||
-          (contentType != null && contentType.indexOf('javascript') === -1)
+          (contentType != null && !contentType.includes('javascript'))
         ) {
           navigator.serviceWorker.ready.then((registration) => {
             registration.unregister().then(() => {

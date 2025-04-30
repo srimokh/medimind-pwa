@@ -1,6 +1,6 @@
 {
   "short_name": "MediMind",
-  "name": "MediMind - Mental Clarity Companion",
+  "name": "MediMind: Your Personal AI Therapist",
   "icons": [
     {
       "src": "logo192.png",
@@ -15,6 +15,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#6366f1",
+  "theme_color": "#4f46e5",
   "background_color": "#ffffff"
 }
