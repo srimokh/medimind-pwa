@@ -27,7 +27,7 @@ function App() {
         },
         {
           headers: {
-            Authorization: `Bearer YOUR_OPENAI_API_KEY`, // replace with real key locally
+            Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`, // replace with real key locally
             "Content-Type": "application/json",
           },
         }
