@@ -22,7 +22,6 @@ function App() {
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
 
-  // 🧠 Sessions logic
   const [sessions, setSessions] = useState(() => {
     const stored = localStorage.getItem("medimind_sessions");
     return stored ? JSON.parse(stored) : [{ id: uuidv4(), name: "Session 1", history: [] }];
@@ -30,6 +29,7 @@ function App() {
   const [activeSessionId, setActiveSessionId] = useState(sessions[0].id);
 
   const activeSession = sessions.find((s) => s.id === activeSessionId);
+
   const setHistory = (newHistory) => {
     setSessions((prev) =>
       prev.map((s) =>
@@ -38,7 +38,6 @@ function App() {
     );
   };
 
-  // 💾 Save sessions to localStorage
   useEffect(() => {
     localStorage.setItem("medimind_sessions", JSON.stringify(sessions));
   }, [sessions]);
@@ -58,13 +57,10 @@ function App() {
     const userMsg = customQuery || query;
     if (!userMsg.trim()) return;
 
-    setSessions((prevSessions) =>
-      prevSessions.map((session) =>
+    setSessions((prev) =>
+      prev.map((session) =>
         session.id === activeSessionId
-          ? {
-              ...session,
-              history: [...session.history, { sender: "user", text: userMsg }],
-            }
+          ? { ...session, history: [...session.history, { sender: "user", text: userMsg }] }
           : session
       )
     );
@@ -74,6 +70,11 @@ function App() {
     setLoading(true);
 
     try {
+      const fullConversation = activeSession.history.map((msg) => ({
+        role: msg.sender === "user" ? "user" : "assistant",
+        content: msg.text,
+      }));
+
       const response = await axios.post(
         "https://api.openai.com/v1/chat/completions",
         {
@@ -84,6 +85,7 @@ function App() {
               content:
                 "You are MediMind — a supportive AI therapist and medication guide. Be calm, clear, insightful, and human.",
             },
+            ...fullConversation,
             { role: "user", content: userMsg },
           ],
           temperature: 0.6,
@@ -105,21 +107,18 @@ function App() {
         setTypingMsg(current);
       }
 
-      setSessions((prevSessions) =>
-        prevSessions.map((session) =>
+      setSessions((prev) =>
+        prev.map((session) =>
           session.id === activeSessionId
-            ? {
-                ...session,
-                history: [...session.history, { sender: "bot", text: fullMsg }],
-              }
+            ? { ...session, history: [...session.history, { sender: "bot", text: fullMsg }] }
             : session
         )
       );
       setTypingMsg("");
     } catch (error) {
       setTypingMsg("");
-      setSessions((prevSessions) =>
-        prevSessions.map((session) =>
+      setSessions((prev) =>
+        prev.map((session) =>
           session.id === activeSessionId
             ? {
                 ...session,
@@ -138,8 +137,8 @@ function App() {
   };
 
   const clearHistory = () => {
-    setSessions((prevSessions) =>
-      prevSessions.map((session) =>
+    setSessions((prev) =>
+      prev.map((session) =>
         session.id === activeSessionId ? { ...session, history: [] } : session
       )
     );
@@ -163,12 +162,12 @@ function App() {
   const renderMessageText = (text) => {
     const numberedRegex = /(\d+\.\s\*\*.*?\*\*:.*?)(?=(\s\d+\.\s|\n|$))/gs;
     const matches = text.match(numberedRegex);
-  
+
     if (matches && matches.length >= 2) {
       return (
         <ol className="list-decimal pl-5 space-y-2">
           {matches.map((item, idx) => {
-            const cleaned = item.replace(/^\d+\.\s/, "").trim(); // Remove leading "1. ", "2. ", etc.
+            const cleaned = item.replace(/^\d+\.\s/, "").trim();
             return (
               <li
                 key={idx}
@@ -181,18 +180,16 @@ function App() {
         </ol>
       );
     }
-  
+
     const fallbackFormatted = text
       .replace(/(\d+\.\s)/g, "<br /><br />$1")
       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-  
+
     return <span dangerouslySetInnerHTML={{ __html: fallbackFormatted }} />;
   };
-  
 
   return (
     <div className="min-h-screen flex text-gray-900 dark:text-gray-100 font-sans transition bg-gradient-to-br from-slate-100 to-white dark:from-gray-900 dark:to-gray-800">
-      {/* Sidebar */}
       <aside className="w-64 bg-white dark:bg-gray-900 border-r dark:border-gray-700 p-4 flex flex-col">
         <h2 className="text-lg font-semibold mb-4">Sessions</h2>
         <div className="flex-1 space-y-2 overflow-y-auto">
@@ -218,7 +215,6 @@ function App() {
         </button>
       </aside>
 
-      {/* Main Chat Area */}
       <div className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-2xl bg-white dark:bg-gray-900 shadow-xl rounded-2xl flex flex-col h-[90vh] border border-gray-100 dark:border-gray-700 relative">
           <header className="p-5 bg-white dark:bg-gray-900 border-b dark:border-gray-700 text-indigo-700 dark:text-indigo-300 text-xl font-semibold text-center shadow-sm relative">
