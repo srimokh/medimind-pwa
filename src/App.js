@@ -2,20 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 
 function App() {
-  const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem("theme") === "dark";
-  });
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [darkMode]);
-
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
   const [query, setQuery] = useState("");
   const [history, setHistory] = useState([]);
   const [typingMsg, setTypingMsg] = useState("");
@@ -30,8 +17,18 @@ function App() {
     "What’s the difference between burnout and depression?",
     "I want to feel focused without feeling wired. What helps?",
     "How can I tell if therapy is working for me?",
-    "What are healthy ways to cope with racing thoughts?",
+    "What are healthy ways to cope with racing thoughts?"
   ];
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [darkMode]);
 
   const handleSearch = async (customQuery = null) => {
     const userMsg = customQuery || query;
@@ -66,13 +63,11 @@ function App() {
 
       const fullMsg = response.data.choices[0].message.content.trim();
       let current = "";
-
       for (let i = 0; i < fullMsg.length; i++) {
         await new Promise((res) => setTimeout(res, 12));
         current += fullMsg[i];
         setTypingMsg(current);
       }
-
       setHistory((prev) => [...prev, { sender: "bot", text: fullMsg }]);
       setTypingMsg("");
     } catch (error) {
@@ -81,7 +76,6 @@ function App() {
         ...prev,
         { sender: "bot", text: "⚠️ Something went wrong. Please try again." },
       ]);
-      console.error("API Error:", error);
     } finally {
       setLoading(false);
     }
