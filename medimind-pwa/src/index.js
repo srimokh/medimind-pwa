@@ -4,8 +4,6 @@ import './index.css';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
-
-
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
@@ -13,15 +11,5 @@ root.render(
   </React.StrictMode>
 );
 
-
-serviceWorkerRegistration.register(); // ← this line needs a semi
-
-
-
-
-
-
-
-
-
+serviceWorkerRegistration.register();
 
