@@ -514,13 +514,13 @@ return (
   <div className="min-h-screen flex text-gray-900 dark:text-gray-100 font-sans transition bg-gradient-to-br from-slate-100 to-white dark:from-gray-900 dark:to-gray-800">
     
     {/* Sidebar */}
-    <aside className="w-80 bg-white dark:bg-gray-900 border-r dark:border-gray-700 p-4 flex flex-col">
+    <aside className="w-50 bg-white dark:bg-gray-900 border-r dark:border-gray-700 p-2 flex flex-col">
       <h2 className="text-lg font-semibold mb-4">Sessions</h2>
       <div className="flex-1 space-y-2 overflow-y-auto">
       {sessions.map((session) => (
   <div
     key={session.id}
-    className={`flex items-left justify-between group px-12 py-6 rounded-md text-medium font-medium ${
+    className={`flex items-left justify-between group px-2 py-2 rounded-md text-medium font-medium ${
       session.id === activeSessionId
         ? "bg-indigo-600 text-white"
         : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
