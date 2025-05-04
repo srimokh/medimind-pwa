@@ -87,7 +87,7 @@ function App() {
     "Is it okay to not feel productive every day?",
   ];
   
-const moodEmojis = ["😁", "🤣", "😅", "🤩", "🥰", "😊", "😉", "😇", "🙂", "☺️", "😘", "😚", "😏", "🥲"];
+
 
 const handleSearch = async (customQuery = null) => {
   const userMsg = customQuery || query;
@@ -576,39 +576,6 @@ return (
 
 
         
-{/* Mood Selector */}
-{!activeSession.moodBefore && (
-  <div className="text-center text-gray-600 dark:text-gray-300 mt-8">
-    <p className="mb-2 text-sm">How are you feeling before starting?</p>
-    <div className="flex flex-wrap justify-center gap-2 px-6">
-      {moodEmojis.map((mood) => (
-        <button
-  key={mood}
-  onClick={() => {
-    setSessions((prev) =>
-      prev.map((s) =>
-        s.id === activeSessionId ? { ...s, moodBefore: mood } : s
-      )
-    );
-    setMoodConfirmed(true);
-    moodSound.play(); // ✅ Play sound
-    setTimeout(() => setMoodConfirmed(false), 3000);
-  }}
-  className="text-3xl hover:scale-125 transition"
->
-  {mood}
-</button>
-      ))}
-    </div>
-
-    {/* ✅ Mood confirmation message */}
-    {moodConfirmed && (
-      <p className="mt-3 text-green-600 dark:text-green-300 text-sm">
-        ✅ Your mood has been captured!
-      </p>
-    )}
-  </div>
-)}
 
 
 
@@ -735,7 +702,7 @@ return (
         {/* Guide Picker */}
         {!activeSession.guide && (
           <div className="text-center text-gray-600 dark:text-gray-300 mt-8">
-            <p className="mb-2 text-sm">Choose your guide:</p>
+            <p className="mb-2 text-lg">Choose your guide:</p>
             <AvatarPicker
   onSelect={(guide) => {
     const updated = { ...activeSession, guide };
