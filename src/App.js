@@ -10,7 +10,6 @@ function App() {
   const bottomRef = useRef(null);
   const [moodConfirmed, setMoodConfirmed] = useState(false);
 
-
   const [sessions, setSessions] = useState(() => {
     const stored = localStorage.getItem("medimind_sessions");
     return stored
@@ -43,7 +42,7 @@ function App() {
       localStorage.setItem("theme", "dark");
     } else {
       document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "dark");
+      localStorage.setItem("theme", "light");
     }
   }, [darkMode]);
 
@@ -51,8 +50,6 @@ function App() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeSession.history, activeSession.typing]);
 
-
-  
   useEffect(() => {
     const handler = (e) => {
       const target = e.target.closest(".topic-link");
@@ -63,13 +60,10 @@ function App() {
         }
       }
     };
-  
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
   }, []);
-  
-  
-  
+
   const samplePrompts = [
     "Why do I feel more off than usual today?",
     "Is it normal to feel okay but still unsettled?",
@@ -86,6 +80,7 @@ function App() {
     "How do I calm myself without using my phone?",
     "Is it okay to not feel productive every day?",
   ];
+
   
 
 
