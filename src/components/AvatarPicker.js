@@ -3,15 +3,11 @@ import React from 'react';
 const guides = [
     { label: "The Monk", emoji: "🙏" },
     { label: "The Stoic", emoji: "🪵" },
-    { label: "The Mystic", emoji: "🌙" },
+    { label: "The Visionary", emoji: "🔮" },
     { label: "The Analyst", emoji: "🧠" },
     { label: "The Warrior", emoji: "⚔️" },
     { label: "The Healer", emoji: "💗" },
-    { label: "The Sage", emoji: "🦉" },
-    { label: "The Guide", emoji: "🧘‍♂️" },
-    { label: "The Mentor", emoji: "🤝" },
     { label: "The Seeker", emoji: "🧭" },
-    { label: "The Visionary", emoji: "🔮" },
     { label: "The Alchemist", emoji: "⚗️" }
   ];
   
