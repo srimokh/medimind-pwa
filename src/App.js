@@ -561,7 +561,7 @@ return (
   onClick={createNewSession}
   className="p-5 cursor-pointer bg-white dark:bg-gray-900 border-b dark:border-gray-700 text-indigo-700 dark:text-indigo-300 text-xl font-semibold text-center shadow-sm relative"
 >
-  MediMiiind 🧠
+🕊️ MediMiiind 🕊️
 
   <button
     onClick={(e) => {
