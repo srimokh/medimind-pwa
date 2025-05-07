@@ -553,10 +553,10 @@ function App() {
   
 
     return (
-      <div className="min-h-screen flex text-gray-900 dark:text-gray-100 font-sans transition bg-gradient-to-br from-slate-100 to-white dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen flex flex-col sm:flex-row text-gray-900 dark:text-gray-100 font-sans transition bg-gradient-to-br from-slate-100 to-white dark:from-gray-900 dark:to-gray-800">
     
         {/* Sidebar */}
-        <aside className="w-48 sm:w-56 bg-white dark:bg-gray-900 border-r dark:border-gray-700 p-2 flex flex-col shrink-0">
+        <aside className="w-full sm:w-56 max-h-[40vh] sm:max-h-none overflow-y-auto bg-white dark:bg-gray-900 border-b sm:border-b-0 sm:border-r dark:border-gray-700 p-2 flex flex-col shrink-0">
           <h2 className="text-base font-semibold mb-2">Sessions</h2>
     
           <div className="flex-1 space-y-2 overflow-y-auto">
@@ -587,18 +587,20 @@ function App() {
           </div>
 
             {/* Place New Session button inside scroll area */}
-   <button
-      onClick={createNewSession}
-      className="text-lg text-indigo-600 hover:underline block w-full text-center mt-2"
-    >
-      ➕ New Session
-    </button>
+            <div className="pt-2 border-t border-gray-200 dark:border-gray-700 mt-2">
+  <button
+    onClick={createNewSession}
+    className="w-full text-center py-2 rounded-lg bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200 hover:bg-indigo-200 dark:hover:bg-indigo-800 transition text-sm font-medium"
+  >
+    ➕ New Session
+  </button>
+</div>
 
         </aside>
     
   
-    {/* Main Chat Area */}
-    <div className="flex-1 flex items-center justify-center p-4 sm:p-10">
+ {/* Main Chat Area */}
+<div className="flex-1 w-full max-w-full sm:max-w-none flex flex-col items-center justify-start px-2 sm:px-4">
   <div className="w-full max-w-xl bg-white dark:bg-gray-900 shadow-xl rounded-2xl flex flex-col min-h-[90vh] border border-gray-100 dark:border-gray-700">
 
         {/* Header */}
@@ -640,12 +642,13 @@ function App() {
     {/* Zone Title */}
     {activeSession.journeyZone && (
   <div>
-    <h2 className="text-4xl sm:text-5xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-br from-indigo-400 to-purple-600 mb-6">
-      {activeSession.journeyZone.label}
-    </h2>
-    <p className="text-lg text-indigo-400 dark:text-indigo-300 font-medium text-center mb-8">
-      Choose your next path below:
-    </p>
+<h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-br from-indigo-400 to-purple-600 mb-4 sm:mb-6">
+  {activeSession.journeyZone.label}
+</h2>
+<p className="text-base sm:text-lg text-indigo-400 dark:text-indigo-300 font-medium text-center mb-6 sm:mb-8">
+  Choose your next path below:
+</p>
+
   </div>
 )}
 
@@ -659,16 +662,17 @@ function App() {
         moodSound.play();
         handleSearch(prompt);
       }}
-      className="p-6 rounded-2xl text-white font-medium shadow-xl transform hover:scale-105 transition-all duration-300 animate-fade-in"
+      className="p-4 sm:p-6 rounded-2xl text-white font-medium shadow-xl transform hover:scale-105 transition-all duration-300 animate-fade-in"
       style={{
         background: getPromptGradient(idx),
         animationDelay: `${idx * 100}ms`
       }}
     >
-      <div className="text-xl">{prompt}</div>
+      <div className="text-base sm:text-xl">{prompt}</div>
     </button>
   ))}
 </div>
+
 
 
   </div>
