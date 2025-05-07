@@ -1,14 +1,59 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
+import JourneyIntro from './components/JourneyIntro';
 import AvatarPicker from './components/AvatarPicker';
+import JourneyMap from './components/JourneyMap';
+
+
 const moodSound = new Audio("https://raw.githubusercontent.com/srimokh/MOOD-SOUND/main/confirm.mp3");
+
+const zonePrompts = {
+  "Forest of Overthinking": [
+    "🌲 What thoughts keep looping without resolution?",
+    "🧠 How can I untangle one worry at a time?",
+    "🗺️ What’s the story behind my mental noise?",
+    "🍃 What would happen if I stopped thinking and just felt?"
+  ],
+  "Sea of Uncertainty": [
+    "🌊 What am I afraid will never become clear?",
+    "🧭 How do I trust myself when I don’t know the way?",
+    "🎣 What can I anchor to in this ocean of questions?",
+    "🚢 What if drifting is exactly what I need right now?"
+  ],
+  "Volcano of Emotion": [
+    "🔥 What’s rising in me that I keep suppressing?",
+    "🌋 What would I scream if I wasn’t afraid?",
+    "💥 What’s waiting to erupt into truth?",
+    "🌪️ What would it feel like to release it all safely?"
+  ],
+  "Glacier of Stillness": [
+    "❄️ What part of me just wants to be still?",
+    "🌙 What am I noticing in the silence?",
+    "🧊 What feels frozen but quietly alive?",
+    "🫗 What truth melts through stillness alone?"
+  ],
+  "Cosmic Reflection Zone": [
+    "🌌 What bigger pattern am I part of?",
+    "🌠 What if I’m exactly where I need to be?",
+    "🪞 What reflection is the universe sending me?",
+    "🌐 What would my life look like from the stars?"
+  ],
+  "Temple of Insight": [
+    "🏛️ What truth have I always known, deep down?",
+    "🔔 What insight is whispering from within?",
+    "🧘 What wisdom feels ready to rise?",
+    "📜 What have my past selves been trying to teach me?"
+  ]
+};
+
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
   const [query, setQuery] = useState("");
   const bottomRef = useRef(null);
   const [moodConfirmed, setMoodConfirmed] = useState(false);
+
 
   const [sessions, setSessions] = useState(() => {
     const stored = localStorage.getItem("medimind_sessions");
@@ -26,6 +71,9 @@ function App() {
             mirrorSummary: null,
             futureEcho: null,
             guide: null,
+            journeyZone: null,
+            started: false,
+
           },
         ];
   });
@@ -65,99 +113,81 @@ function App() {
   }, []);
 
   const samplePrompts = [
-    "Why do I feel more off than usual today?",
-    "Is it normal to feel okay but still unsettled?",
-    "How can I clear my head when it feels cluttered?",
-    "What should I do when nothing feels interesting?",
-    "How do I handle feeling overwhelmed by small things?",
-    "What helps when I'm tired but can't relax?",
-    "How can I stop overthinking simple decisions?",
-    "What are healthy ways to reset during the day?",
-    "How do I know if I need a break or to push through?",
-    "What helps when I feel disconnected from people?",
-    "Why do I feel unmotivated even with enough sleep?",
-    "What are small ways to feel more present?",
-    "How do I calm myself without using my phone?",
-    "Is it okay to not feel productive every day?",
+    "🗺️ What is the first step on my emotional journey?",
+    "🌌 How can I reconnect with something bigger than me?",
+    "🔥 What part of me is asking to be felt right now?",
+    "🧭 Why do I feel like I'm searching for something unseen?",
+    "💫 What message is hidden beneath my restlessness?",
+    "🏔️ How do I face an inner storm without running?",
+    "🌙 What truth is waiting in the quiet parts of me?",
+    "🔮 How do I know if I’m resisting my next chapter?",
+    "🌿 What does healing look like for me today?",
+    "⚔️ What fear am I being asked to confront gently?",
+    "🪞 What’s trying to mirror itself through my emotions?",
+    "🚪How do I step through the door that just appeared?",
+    "💭 What thoughts are keeping me stuck in a loop?",
+    "✨ If my future self could speak now, what would they say?"
   ];
 
-  
 
 
-const handleSearch = async (customQuery = null) => {
-  const userMsg = customQuery || query;
-  if (!userMsg.trim()) return;
+  const handleSearch = async (customQuery = null) => {
+    const userMsg = customQuery || query;
+    if (!userMsg.trim()) return;
 
-  const sessionClone = JSON.parse(JSON.stringify(activeSession));
+    const sessionClone = JSON.parse(JSON.stringify(activeSession));
 
-  setSessions((prev) =>
-    prev.map((session) =>
-      session.id === activeSessionId
-        ? {
-            ...session,
-            history: [...session.history, { sender: "user", text: userMsg }],
-            loading: true,
-            typing: "",
-          }
-        : session
-    )
-  );
-
-  if (sessionClone.name.startsWith("Session") && sessionClone.history.length === 0) {
-    const shortName = userMsg.length > 30 ? userMsg.slice(0, 30) + "..." : userMsg;
     setSessions((prev) =>
-      prev.map((s) => (s.id === activeSessionId ? { ...s, name: shortName } : s))
+      prev.map((session) =>
+        session.id === activeSessionId
+          ? {
+              ...session,
+              history: [...session.history, { sender: "user", text: userMsg }],
+              loading: true,
+              typing: "",
+            }
+          : session
+      )
     );
-  }
 
-  setQuery("");
-
-  
-  function formatMediMindResponse(responseText) {
-    const [bodyRaw, questionRaw] = responseText.split(/-{3,}/);
-  
-    if (!bodyRaw || !questionRaw) {
-      return `<p>${responseText}</p>`;
+    if (sessionClone.name.startsWith("Session") && sessionClone.history.length === 0) {
+      const shortName = userMsg.length > 30 ? userMsg.slice(0, 30) + "..." : userMsg;
+      setSessions((prev) =>
+        prev.map((s) => (s.id === activeSessionId ? { ...s, name: shortName } : s))
+      );
     }
-  
-    let bodyFormatted = bodyRaw.trim();
-  
-    // Add paragraph indentation
- bodyFormatted = bodyFormatted
- .split(/\n\s*\n/) // split by paragraph
- .map(p => `<p style="text-indent: 1.5em; margin-bottom: 1em;">${p.trim()}</p>`)
- .join("");
 
+    setQuery("");
 
-    // Convert bold headers to clickable spans
-    bodyFormatted = bodyFormatted.replace(
-      /\*\*(.+?)\*\*:/g,
-      (_, title) =>
-        `<span data-topic="${title}" class="topic-link cursor-pointer text-indigo-600 font-semibold hover:underline">${title}</span>:`
-    );
-    
-    
-  
-    // Convert double line breaks to paragraph tags
-    bodyFormatted = bodyFormatted
-      .split(/\n\s*\n/)
-      .map((para) => `<p>${para.trim()}</p>`)
-      .join("");
-  
-    const question = questionRaw.trim();
-  
-    const hasBullets = bodyFormatted.match(/^- .*?:/gm);
+    const formatMediMindResponse = (responseText) => {
+      const [bodyRaw, questionRaw] = responseText.split(/-{3,}/);
+      if (!bodyRaw || !questionRaw) return `<p>${responseText}</p>`;
 
+      let bodyFormatted = bodyRaw.trim();
+      bodyFormatted = bodyFormatted
+        .split(/\n\s*\n/)
+        .map((p) => `<p style="text-indent: 1.5em; margin-bottom: 1em;">${p.trim()}</p>`)
+        .join("");
+      bodyFormatted = bodyFormatted.replace(
+        /\*\*(.+?)\*\*:/g,
+        (_, title) =>
+          `<span data-topic="${title}" class="topic-link cursor-pointer text-indigo-600 font-semibold hover:underline">${title}</span>:`
+      );
+      bodyFormatted = bodyFormatted
+        .split(/\n\s*\n/)
+        .map((para) => `<p>${para.trim()}</p>`)
+        .join("");
 
-    return `
-      <div class="space-y-4">
-        ${bodyFormatted}
-        <hr class="my-6 border-gray-300 dark:border-gray-600" />
-        <p class="text-indigo-500 dark:text-indigo-300 italic text-lg pt-2">${question}</p>
-      </div>
-    `;
-  }
+      const question = questionRaw.trim();
 
+      return `
+        <div class="space-y-4">
+          ${bodyFormatted}
+          <hr class="my-6 border-gray-300 dark:border-gray-600" />
+          <p class="text-indigo-500 dark:text-indigo-300 italic text-lg pt-2">${question}</p>
+        </div>
+      `;
+    };
 
     try {
       const fullConversation = sessionClone.history.map((msg) => ({
@@ -207,24 +237,20 @@ const handleSearch = async (customQuery = null) => {
 
       const rawMsg = response.data.choices[0].message.content.trim();
       const fullMsg = formatMediMindResponse(rawMsg);
-      
 
-      
       const typeMessage = (formattedText, rawText) => {
         let current = "";
         let index = 0;
-      
+
         const typeNextChar = () => {
           if (index < formattedText.length) {
             current += formattedText[index];
             index++;
-      
             setSessions((prev) =>
               prev.map((s) =>
                 s.id === activeSessionId ? { ...s, typing: current } : s
               )
             );
-      
             setTimeout(typeNextChar, 1);
           } else {
             setSessions((prev) =>
@@ -248,35 +274,29 @@ const handleSearch = async (customQuery = null) => {
             );
           }
         };
-      
         typeNextChar();
       };
-      
-            typeMessage(fullMsg, rawMsg); // ✅ correct
 
-      
-      
-      
-      
-          } catch (error) {
-            setSessions((prev) =>
-              prev.map((s) =>
-                s.id === activeSessionId
-                  ? {
-                      ...s,
-                      history: [
-                        ...s.history,
-                        { sender: "bot", text: "⚠️ Something went wrong. Please try again." },
-                      ],
-                      typing: "",
-                      loading: false,
-                    }
-                  : s
-              )
-            );
-            console.error("API error:", error);
-          }
-        };
+      typeMessage(fullMsg, rawMsg);
+    } catch (error) {
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.id === activeSessionId
+            ? {
+                ...s,
+                history: [
+                  ...s.history,
+                  { sender: "bot", text: "⚠️ Something went wrong. Please try again." },
+                ],
+                typing: "",
+                loading: false,
+              }
+            : s
+        )
+      );
+      console.error("API error:", error);
+    }
+  };
 
   const createNewSession = () => {
     const newSession = {
@@ -289,11 +309,22 @@ const handleSearch = async (customQuery = null) => {
       moodAfter: null,
       mirrorSummary: null,
       futureEcho: null,
-      guide: null, // ✅ Add this line
+      guide: null,
+      journeyZone: null,
+      started: false,
     };
-    setSessions([...sessions, newSession]);
+  
+    let updatedSessions = [...sessions, newSession];
+  
+    // 🔥 Trim to last 10 if over limit
+    if (updatedSessions.length > 10) {
+      updatedSessions = updatedSessions.slice(-10);
+    }
+  
+    setSessions(updatedSessions);
     setActiveSessionId(newSession.id);
   };
+  
   
   
 
@@ -502,54 +533,73 @@ const handleSearch = async (customQuery = null) => {
       return filtered;
     });
   };
+
+    // State and useEffect hooks...
+  
+    // ✨ Prompt gradient generator
+    const getPromptGradient = (index) => {
+      const gradients = [
+        "linear-gradient(135deg, #6366f1, #8b5cf6)",
+        "linear-gradient(135deg, #10b981, #3b82f6)",
+        "linear-gradient(135deg, #ec4899, #f59e0b)",
+        "linear-gradient(135deg, #f43f5e, #f97316)",
+        "linear-gradient(135deg, #06b6d4, #3b82f6)",
+        "linear-gradient(135deg, #9333ea, #e11d48)",
+        "linear-gradient(135deg, #4ade80, #22d3ee)",
+        "linear-gradient(135deg, #facc15, #f472b6)"
+      ];
+      return gradients[index % gradients.length];
+    };
   
 
-
-return (
-  <div className="min-h-screen flex text-gray-900 dark:text-gray-100 font-sans transition bg-gradient-to-br from-slate-100 to-white dark:from-gray-900 dark:to-gray-800">
+    return (
+      <div className="min-h-screen flex text-gray-900 dark:text-gray-100 font-sans transition bg-gradient-to-br from-slate-100 to-white dark:from-gray-900 dark:to-gray-800">
     
-    {/* Sidebar */}
-    <aside className="w-50 bg-white dark:bg-gray-900 border-r dark:border-gray-700 p-2 flex flex-col">
-      <h2 className="text-lg font-semibold mb-4">Sessions</h2>
-      <div className="flex-1 space-y-2 overflow-y-auto">
-      {sessions.map((session) => (
-  <div
-    key={session.id}
-    className={`flex items-left justify-between group px-2 py-2 rounded-md text-medium font-medium ${
-      session.id === activeSessionId
-        ? "bg-indigo-600 text-white"
-        : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
-    }`}
-  >
-    <button
-      onClick={() => setActiveSessionId(session.id)}
-      className="flex- text-left truncate"
-    >
-      {session.name}
-    </button>
-    <button
-      onClick={() => deleteSession(session.id)}
-      className="ml-2 text-red-500 opacity-0 group-hover:opacity-100 hover:text-red-700 transition"
-      title="Delete session"
-    >
-      ❌
-    </button>
-  </div>
-))}
+        {/* Sidebar */}
+        <aside className="w-48 sm:w-56 bg-white dark:bg-gray-900 border-r dark:border-gray-700 p-2 flex flex-col shrink-0">
+          <h2 className="text-base font-semibold mb-2">Sessions</h2>
+    
+          <div className="flex-1 space-y-2 overflow-y-auto">
+            {sessions.map((session) => (
+              <div
+                key={session.id}
+                className={`flex items-center justify-between group px-2 py-2 rounded-md text-sm font-medium ${
+                  session.id === activeSessionId
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
+                }`}
+              >
+                <button
+                  onClick={() => setActiveSessionId(session.id)}
+                  className="flex-1 text-left truncate"
+                >
+                  {session.name}
+                </button>
+                <button
+                  onClick={() => deleteSession(session.id)}
+                  className="ml-2 text-red-500 opacity-0 group-hover:opacity-100 hover:text-red-700 transition"
+                  title="Delete session"
+                >
+                  ❌
+                </button>
+              </div>
+            ))}
+          </div>
 
-   {/* Place New Session button inside scroll area */}
+            {/* Place New Session button inside scroll area */}
    <button
       onClick={createNewSession}
       className="text-lg text-indigo-600 hover:underline block w-full text-center mt-2"
     >
       ➕ New Session
     </button>
-  </div>
-</aside>
 
+        </aside>
+    
+  
     {/* Main Chat Area */}
-    <div className="flex-1 flex flex-col items-center justify-start">
-      <div className="w-full max-w-full sm:max-w-2xl bg-white dark:bg-gray-900 shadow-xl rounded-2xl flex flex-col h-[90vh] border border-gray-100 dark:border-gray-700 relative">
+    <div className="flex-1 flex items-center justify-center p-4 sm:p-10">
+  <div className="w-full max-w-xl bg-white dark:bg-gray-900 shadow-xl rounded-2xl flex flex-col min-h-[90vh] border border-gray-100 dark:border-gray-700">
 
         {/* Header */}
         <header
@@ -575,47 +625,74 @@ return (
 
 
         {/* Chat Area */}
-        {activeSession.moodBefore && activeSession.guide && (
+        {activeSession.moodBefore && activeSession.guide && activeSession.journeyZone && (
+
           <>
-            <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+            <div className="flex-4 overflow-y-auto px-2 py-4 space-y-4">
               
               {/* Welcome Prompt */}
               {activeSession.history.length === 0 && !activeSession.typing && (
-                <div className="text-center text-gray-600 dark:text-gray-300 mt-6">
-                  <h2 className="text-2xl font-semibold mb-2">Welcome to MediMiiind</h2>
-                  <p>Your supportive space for Peace of Mind.</p>
-                  <p className="text-lg text-gray-400 italic mt-4 mb-2">Try asking:</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
-                    {samplePrompts.map((prompt, idx) => (
-                     <button
-                     key={idx}
-                     onClick={() => {
-                       moodSound.play(); // 🔊 Play sound on sample prompt click
-                       handleSearch(prompt);
-                     }}
-                   
-                        className="bg-gray-100 dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-100 px-6 py-4 rounded-lg shadow-sm text-medium text-left transition w-full"
-                      >
-                        {prompt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+  <div className="text-center text-gray-600 dark:text-gray-300 mt-6 animate-fade-in">
+    <h2 className="text-2xl font-semibold mb-2">Welcome to MediMiiind</h2>
+    <p>Your supportive space for Peace of Mind.</p>
 
-              {/* Messages */}
-              {activeSession.history.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`max-w-xl px-4 py-3 rounded-xl shadow-sm ${
-                    msg.sender === "user"
-                      ? "ml-auto bg-indigo-600 text-white"
-                      : "mr-auto bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100"
-                  }`}
-                >
-                  {renderMessageText(msg.text)}
-                </div>
-              ))}
+
+    {/* Zone Title */}
+    {activeSession.journeyZone && (
+  <div>
+    <h2 className="text-4xl sm:text-5xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-br from-indigo-400 to-purple-600 mb-6">
+      {activeSession.journeyZone.label}
+    </h2>
+    <p className="text-lg text-indigo-400 dark:text-indigo-300 font-medium text-center mb-8">
+      Choose your next path below:
+    </p>
+  </div>
+)}
+
+
+    {/* Prompt Grid */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+  {(zonePrompts[activeSession.journeyZone?.label] || []).map((prompt, idx) => (
+    <button
+      key={idx}
+      onClick={() => {
+        moodSound.play();
+        handleSearch(prompt);
+      }}
+      className="p-6 rounded-2xl text-white font-medium shadow-xl transform hover:scale-105 transition-all duration-300 animate-fade-in"
+      style={{
+        background: getPromptGradient(idx),
+        animationDelay: `${idx * 100}ms`
+      }}
+    >
+      <div className="text-xl">{prompt}</div>
+    </button>
+  ))}
+</div>
+
+
+  </div>
+)}
+
+
+{/* Messages */}
+{activeSession.history.map((msg, idx) => (
+  <div
+    key={idx}
+    className={`w-full flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+  >
+    <div
+      className={`max-w-xs sm:max-w-md px-4 py-3 rounded-2xl text-base font-medium transition-all shadow-md
+        ${msg.sender === "user"
+          ? "bg-indigo-100 dark:bg-indigo-800 text-indigo-900 dark:text-indigo-100"
+          : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+        }`}
+    >
+      {renderMessageText(msg.text)}
+    </div>
+  </div>
+))}
+
 
               {/* Typing Animation */}
               {activeSession.typing && (
@@ -675,7 +752,10 @@ return (
                 className="flex-1 px-4 py-3 sm:px-6 sm:py-5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
               />
               <button
-                onClick={() => handleSearch()}
+                onClick={() => {
+                  moodSound.play(); // 🔊 Play sound when user sends message
+                  handleSearch();
+                }}                
                 disabled={activeSession.loading}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-9 py-5 rounded-lg text-lg font-semibold disabled:opacity-50"
               >
@@ -694,36 +774,79 @@ return (
           </>
         )}
 
-        {/* Guide Picker */}
-        {!activeSession.guide && (
-          <div className="text-center text-gray-600 dark:text-gray-300 mt-8">
-            <p className="mb-2 text-lg">Choose your guide:</p>
-            <AvatarPicker
-  onSelect={(guide) => {
-    const updated = { ...activeSession, guide };
+{/* Guide Picker — After JourneyIntro is started */}
+{activeSession.started && !activeSession.guide && (
+  <div className="text-center text-gray-600 dark:text-gray-300 mt-8">
+    <p className="mb-2 text-lg">Choose your guide:</p>
+    <AvatarPicker
+      onSelect={(guide) => {
+        const updated = { ...activeSession, guide };
 
-    if (!updated.moodBefore) {
-      updated.moodBefore = "😊";
-    }
+        if (!updated.moodBefore) {
+          updated.moodBefore = "😊";
+        }
 
+        setSessions((prev) =>
+          prev.map((s) => (s.id === activeSessionId ? updated : s))
+        );
+
+        moodSound.play();
+
+        setTimeout(() => {
+          bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 300);
+      }}
+    />
+  </div>
+)}
+
+
+{/* Journey Intro — Show first */}
+{!activeSession.started && activeSession.history.length === 0 && (
+  <JourneyIntro
+  onBegin={() => {
+    const updated = { ...activeSession, started: true };
     setSessions((prev) =>
       prev.map((s) => (s.id === activeSessionId ? updated : s))
     );
-
-    moodSound.play(); // 🔊 Play sound on avatar click
-
-    setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 300);
+    moodSound.play(); // 🔊 Add here
   }}
 />
+)}
 
-          </div>
-        )}
-            </div>
+{/* Journey Map — After guide is chosen */}
+{activeSession.guide && !activeSession.journeyZone && (
+  <JourneyMap
+    onSelectZone={(zone) => {
+      const updated = { ...activeSession, journeyZone: zone };
+      setSessions((prev) =>
+        prev.map((s) => (s.id === activeSessionId ? updated : s))
+      );
+
+      moodSound.play();
+
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    }}
+  />
+)}
+
+{/* Chat UI — only after guide + zone are selected */}
+{activeSession.guide && activeSession.journeyZone && (
+  <>
+    {/* Your full chat area goes here. For now, you can use a placeholder: */}
+    <div className="text-center p-10 text-gray-500">
+      🔮 Chat experience starts here (replace with chat logic)
     </div>
-  </div>  
- ); 
+  </>
+)}
+
+
+      </div> 
+    </div>   
+  </div>     
+);          
 }
 
 export default App;
