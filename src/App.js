@@ -53,6 +53,10 @@ function App() {
   const [query, setQuery] = useState("");
   const bottomRef = useRef(null);
   const [moodConfirmed, setMoodConfirmed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [screenStep, setScreenStep] = useState("intro"); // "intro", "guide", "zone", "chat"
+
+
 
 
   const [sessions, setSessions] = useState(() => {
@@ -554,9 +558,28 @@ function App() {
 
     return (
       <div className="min-h-screen flex flex-col sm:flex-row text-gray-900 dark:text-gray-100 font-sans transition bg-gradient-to-br from-slate-100 to-white dark:from-gray-900 dark:to-gray-800">
-    
+
+{/* Mobile Hamburger */}
+<div className="sm:hidden flex justify-between items-center p-4 bg-white dark:bg-gray-900 border-b dark:border-gray-700">
+  <button
+    onClick={() => setSidebarOpen(!sidebarOpen)}
+    className="text-2xl text-indigo-600 dark:text-indigo-300 focus:outline-none"
+  >
+    ☰
+  </button>
+  <span className="text-lg font-semibold text-indigo-700 dark:text-indigo-200">
+    MediMind
+  </span>
+</div>
+
+
         {/* Sidebar */}
-        <aside className="w-full sm:w-56 max-h-[40vh] sm:max-h-none overflow-y-auto bg-white dark:bg-gray-900 border-b sm:border-b-0 sm:border-r dark:border-gray-700 p-2 flex flex-col shrink-0">
+        <aside
+  className={`${
+    sidebarOpen ? "block" : "hidden"
+  } sm:block w-full sm:w-56 max-h-[40vh] sm:max-h-none overflow-y-auto bg-white dark:bg-gray-900 border-b sm:border-b-0 sm:border-r dark:border-gray-700 p-2 flex flex-col shrink-0`}
+>
+
           <h2 className="text-base font-semibold mb-2">Sessions</h2>
     
           <div className="flex-1 space-y-2 overflow-y-auto">
@@ -779,8 +802,14 @@ function App() {
         )}
 
 {/* Guide Picker — After JourneyIntro is started */}
-{activeSession.started && !activeSession.guide && (
+{screenStep === "guide" && (
   <div className="text-center text-gray-600 dark:text-gray-300 mt-8">
+    <button
+      onClick={() => setScreenStep("intro")}
+      className="text-indigo-600 underline text-sm mb-4"
+    >
+      ← Back
+    </button>
     <p className="mb-2 text-lg">Choose your guide:</p>
     <AvatarPicker
       onSelect={(guide) => {
@@ -799,6 +828,8 @@ function App() {
         setTimeout(() => {
           bottomRef.current?.scrollIntoView({ behavior: "smooth" });
         }, 300);
+
+        setScreenStep("zone");
       }}
     />
   </div>
@@ -806,45 +837,71 @@ function App() {
 
 
 {/* Journey Intro — Show first */}
-{!activeSession.started && activeSession.history.length === 0 && (
+{screenStep === "intro" && (
   <JourneyIntro
-  onBegin={() => {
-    const updated = { ...activeSession, started: true };
-    setSessions((prev) =>
-      prev.map((s) => (s.id === activeSessionId ? updated : s))
-    );
-    moodSound.play(); // 🔊 Add here
-  }}
-/>
-)}
-
-{/* Journey Map — After guide is chosen */}
-{activeSession.guide && !activeSession.journeyZone && (
-  <JourneyMap
-    onSelectZone={(zone) => {
-      const updated = { ...activeSession, journeyZone: zone };
+    onBegin={() => {
+      const updated = { ...activeSession, started: true };
       setSessions((prev) =>
         prev.map((s) => (s.id === activeSessionId ? updated : s))
       );
-
       moodSound.play();
-
-      setTimeout(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 300);
+      setScreenStep("guide");
     }}
   />
 )}
 
-{/* Chat UI — only after guide + zone are selected */}
-{activeSession.guide && activeSession.journeyZone && (
+
+{/* Journey Map — After guide is chosen */}
+{screenStep === "zone" && activeSession.guide && !activeSession.journeyZone && (
   <>
-    {/* Your full chat area goes here. For now, you can use a placeholder: */}
+    <div className="text-center mt-4">
+      <button
+        onClick={() => setScreenStep("guide")}
+        className="text-sm text-indigo-500 hover:underline"
+      >
+        ← Back to guide selection
+      </button>
+    </div>
+
+    <JourneyMap
+ onSelectZone={(zone) => {
+   const updated = { ...activeSession, journeyZone: zone };
+   setSessions((prev) =>
+     prev.map((s) => (s.id === activeSessionId ? updated : s))
+   );
+
+   moodSound.play();
+
+   setTimeout(() => {
+     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+   }, 300);
+
+   setScreenStep("chat"); // ✅ move to chat after selecting
+ }}
+/>
+
+  </>
+)}
+
+
+{/* Chat UI — only after guide + zone are selected */}
+{screenStep === "chat" && activeSession.guide && activeSession.journeyZone && (
+  <>
+  <div className="text-center mt-4">
+  <button
+    onClick={() => setScreenStep("zone")}
+    className="text-sm text-indigo-500 hover:underline"
+  >
+    ← Back to path selection
+  </button>
+</div>
+
     <div className="text-center p-10 text-gray-500">
-      🔮 Chat experience starts here (replace with chat logic)
+      🔮 Chat experience starts here
     </div>
   </>
 )}
+
 
 
       </div> 
